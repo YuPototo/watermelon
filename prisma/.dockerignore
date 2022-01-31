@@ -1,0 +1,47 @@
+# NPM 相关
+node_modules
+
+# Docker 相关
+.dockerignore
+Dockerfile
+docker-compose*
+
+# env
+.env.dev
+.env.test
+
+# 不要传 out 文件夹
+out
+
+# 系统相关
+.DS_Store
+
+# 编辑器
+.vscode
+
+# GIT 相关
+.git
+.gitignore
+
+
+# 文档
+docs
+
+
+# 测试
+tests
+__tests__
+jest.config.js
+
+
+# prettier
+.prettierignore
+.prettierrc.json
+
+
+# eslint
+.eslintignore
+.eslintrc.json
+
+# logs
+logs

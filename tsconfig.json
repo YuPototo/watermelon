@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    /*
+        下面3条参考：
+        https://stackoverflow.com/questions/67371787/what-typescript-configuration-produces-output-closest-to-node-js-16-capabilities
+        */
+    "lib": ["ES2021"],
+    "module": "CommonJS",
+    "target": "ES2021",
+
+    /* root 和 out dir */
+    "rootDir": "src",
+    "outDir": "./out",
+
+    /* for absolutate import  */
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*", "out/*"]
+    },
+
+    /* Type Checking */
+    "strict": true, // 默认配置，不修改
+
+    /* Interop Constraints  */
+    "esModuleInterop": true, // 默认配置，不修改
+    "forceConsistentCasingInFileNames": true, // 默认配置，不修改
+
+    /* Completeness */
+    "skipLibCheck": true ,// 默认配置，不修改
+   
+
+  },
+    /* ignore */
+    "exclude": [
+        "**/*.test.ts"
+    ]
+}
