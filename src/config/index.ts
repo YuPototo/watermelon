@@ -27,6 +27,7 @@ interface Config {
         loggerLevel: LogLevel
         httpLogDir: string
         errorLogDir: string
+        infoLogDir: string
     }
 }
 
@@ -42,6 +43,7 @@ const config: Config = {
         loggerLevel: parsedEnv.LOGGER_LEVEL as LogLevel,
         httpLogDir: parsedEnv.HTTP_LOG_DIR as string,
         errorLogDir: parsedEnv.ERROR_LOG_DIR as string,
+        infoLogDir: parsedEnv.INFO_LOG_DIR as string,
     },
 }
 

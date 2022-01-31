@@ -47,12 +47,13 @@ const toCsvFormat = winston.format.printf((info) => {
     return `${info.timestamp},${info.level},${info.message}`
 })
 
-const httpOnly = winston.format((info) => {
-    if (info.level !== 'http') {
-        return false
-    }
-    return info
-})
+const logByLevel = (level: LogLevel) =>
+    winston.format((info) => {
+        if (info.level !== level) {
+            return false
+        }
+        return info
+    })
 
 const consoleFormat = winston.format.combine(
     winston.format.colorize(),
@@ -72,7 +73,16 @@ const errorLogFormat = winston.format.combine(
 )
 
 const httpLogFormat = winston.format.combine(
-    httpOnly(),
+    logByLevel('http')(),
+    winston.format.prettyPrint(),
+    winston.format.splat(),
+    winston.format.simple(),
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+    toCsvFormat
+)
+
+const infoFormat = winston.format.combine(
+    logByLevel('info')(),
     winston.format.prettyPrint(),
     winston.format.splat(),
     winston.format.simple(),
@@ -91,6 +101,16 @@ const httpTransport: DailyRotateFile = new DailyRotateFile({
     level: 'http',
 })
 
+const infoTransport: DailyRotateFile = new DailyRotateFile({
+    format: infoFormat,
+    dirname: config.logger.infoLogDir,
+    filename: 'info_%DATE%.log',
+    datePattern: 'YYYY_ww',
+    maxSize: '20m',
+    maxFiles: '8',
+    level: 'info',
+})
+
 const errorTransport: DailyRotateFile = new DailyRotateFile({
     format: errorLogFormat,
     dirname: config.logger.errorLogDir,
@@ -105,6 +125,7 @@ const transports = [
     new winston.transports.Console({ format: consoleFormat }),
     errorTransport,
     httpTransport,
+    infoTransport,
 ]
 
 const level =

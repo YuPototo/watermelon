@@ -6,11 +6,11 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc",
-        "start": "ENV_FILE=./config/.env.prod -e ./prisma/.env.db.prod -- node -r tsconfig-paths/register ./out/index.js",
-        "dev": "ENV_FILE=./config/.env.dev dotenv -e ./prisma/.env.db.dev tsnd -r tsconfig-paths/register --respawn --transpile-only ./src/index.ts",
-        "test:migrate": "dotenv -e ./prisma/.db.env.test prisma migrate dev --name init",
-        "test:up": "docker-compose -f docker-compose.dev.yml -p test_postgres_db up -d",
-        "test:down": "docker-compose -f docker-compose.dev.yml -p test_postgres_db down",
+        "start": "ENV_FILE=./config/.env.prod -e ./prisma/.db.env.prod -- node -r tsconfig-paths/register ./out/index.js",
+        "dev": "ENV_FILE=./config/.env.dev dotenv -e ./prisma/.db.env.dev -- tsnd -r tsconfig-paths/register --respawn --transpile-only ./src/index.ts",
+        "db_up": "docker-compose -f docker-compose.dev.yml -p test_postgres_db up -d",
+        "db_down": "docker-compose -f docker-compose.dev.yml -p test_postgres_db down",
+        "migrate_test": "dotenv -e ./prisma/.db.env.test prisma migrate dev --name init",
         "test": "ENV_FILE=./config/.env.test dotenv -e ./prisma/.db.env.test jest --runInBand",
         "lint": "eslint"
     },
