@@ -9,6 +9,7 @@ docker-compose*
 # env
 .env.dev
 .env.test
+.env.prod
 
 # 不要传 out 文件夹
 out

@@ -6,11 +6,13 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc",
-        "start": "ENV_FILE=./config/.env.prod -e ./prisma/.db.env.prod -- node -r tsconfig-paths/register ./out/index.js",
+        "start": "ENV_FILE=./config/.env.prod dotenv -e ./prisma/.db.env.prod -- node -r tsconfig-paths/register ./out/index.js",
         "dev": "ENV_FILE=./config/.env.dev dotenv -e ./prisma/.db.env.dev -- tsnd -r tsconfig-paths/register --respawn --transpile-only ./src/index.ts",
         "db_up": "docker-compose -f docker-compose.dev.yml -p test_postgres_db up -d",
         "db_down": "docker-compose -f docker-compose.dev.yml -p test_postgres_db down",
         "migrate_test": "dotenv -e ./prisma/.db.env.test prisma migrate dev --name init",
+        "migrate_dev": "dotenv -e ./prisma/.db.env.dev -- prisma migrate dev",
+        "migrate_local_staging": "dotenv -e ./prisma/.db.env.staging -- prisma migrate dev",
         "test": "ENV_FILE=./config/.env.test dotenv -e ./prisma/.db.env.test jest --runInBand",
         "lint": "eslint"
     },
