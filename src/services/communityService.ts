@@ -42,4 +42,17 @@ export const leaveCommunity = async (userId: number, communityId: number) => {
     }
 }
 
-export default { getCommunities, joinCommunity, leaveCommunity }
+const checkIsMember = async (userId: number, communityId: number) => {
+    const record = await db.communityUser.findUnique({
+        where: {
+            userId_communityId: { userId, communityId },
+        },
+    })
+    if (record) {
+        return true
+    } else {
+        return false
+    }
+}
+
+export default { getCommunities, joinCommunity, leaveCommunity, checkIsMember }

@@ -13,7 +13,7 @@
         "migrate_test": "dotenv -e ./prisma/.db.env.test -- prisma migrate dev --name init",
         "migrate_dev": "dotenv -e ./prisma/.db.env.dev -- prisma migrate dev",
         "migrate_local_staging": "dotenv -e ./prisma/.db.env.staging -- prisma migrate dev",
-        "test": "ENV_FILE=./config/.env.test dotenv -e ./prisma/.db.env.test -- jest --runInBand",
+        "test": "ENV_FILE=./config/.env.test dotenv -e ./prisma/.db.env.test -- jest --runInBand --watch --onlyChanged",
         "lint": "eslint"
     },
     "dependencies": {

@@ -128,3 +128,35 @@ describe('DELETE /communityUser/:id', () => {
         expect(res.statusCode).toBe(200)
     })
 })
+
+describe('GET /communityUser/:id', () => {
+    it('should require auth', async () => {
+        const res = await request(app).get(`/api/communityUser/${communityId}`)
+        expect(res.statusCode).toBe(401)
+    })
+
+    it('should return result when user is not member', async () => {
+        const res = await request(app)
+            .get(`/api/communityUser/${communityId}`)
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.statusCode).toBe(200)
+        expect(res.body).toEqual({
+            isMember: false,
+        })
+    })
+
+    it('should return result when user is member', async () => {
+        const resJoin = await request(app)
+            .put(`/api/communityUser/${communityId}`)
+            .set('Authorization', `Bearer ${token}`)
+        expect(resJoin.statusCode).toBe(201)
+
+        const res = await request(app)
+            .get(`/api/communityUser/${communityId}`)
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.statusCode).toBe(200)
+        expect(res.body).toEqual({
+            isMember: true,
+        })
+    })
+})

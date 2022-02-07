@@ -24,3 +24,16 @@ export const leaveCommunityHandler: RequestHandler = async (req, res, next) => {
         next(err)
     }
 }
+
+export const getIsMemberHandler: RequestHandler = async (req, res, next) => {
+    const { id: communityId } = req.params
+    try {
+        const isMember = await communityService.checkIsMember(
+            req.user.id,
+            parseInt(communityId)
+        )
+        return res.json({ isMember })
+    } catch (err) {
+        next(err)
+    }
+}
