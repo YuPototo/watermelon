@@ -7,6 +7,8 @@ import logger, { useLog } from '@/utils/logger'
 
 import userRouter from './routes/userRoute'
 import logRouter from './routes/logRoute'
+import communityRouter from './routes/communityRoute'
+import communityUserRouter from './routes/communityUserRoute'
 
 import { getErrorMessage } from './utils/err/errUtils'
 
@@ -25,6 +27,8 @@ export async function createApp(): Promise<Express> {
     // routes
     app.use(`${API_PREFIX}/users`, userRouter)
     app.use(`${API_PREFIX}/logs`, logRouter)
+    app.use(`${API_PREFIX}/communities`, communityRouter)
+    app.use(`${API_PREFIX}/communityUser`, communityUserRouter)
 
     // Error-handling middleware: 必须使用 4个 argument
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

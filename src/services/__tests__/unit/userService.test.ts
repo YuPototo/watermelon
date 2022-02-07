@@ -1,4 +1,4 @@
-import { decodeToken } from '@/services/userService'
+import { decodeToken } from '../../../services/userService'
 import jwt from 'jsonwebtoken'
 
 const SECRET = 'test_secret'

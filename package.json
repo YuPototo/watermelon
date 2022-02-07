@@ -10,10 +10,10 @@
         "dev": "ENV_FILE=./config/.env.dev dotenv -e ./prisma/.db.env.dev -- tsnd -r tsconfig-paths/register --respawn --transpile-only ./src/index.ts",
         "db_up": "docker-compose -f docker-compose.dev.yml -p test_postgres_db up -d",
         "db_down": "docker-compose -f docker-compose.dev.yml -p test_postgres_db down",
-        "migrate_test": "dotenv -e ./prisma/.db.env.test prisma migrate dev --name init",
+        "migrate_test": "dotenv -e ./prisma/.db.env.test -- prisma migrate dev --name init",
         "migrate_dev": "dotenv -e ./prisma/.db.env.dev -- prisma migrate dev",
         "migrate_local_staging": "dotenv -e ./prisma/.db.env.staging -- prisma migrate dev",
-        "test": "ENV_FILE=./config/.env.test dotenv -e ./prisma/.db.env.test jest --runInBand",
+        "test": "ENV_FILE=./config/.env.test dotenv -e ./prisma/.db.env.test -- jest --runInBand",
         "lint": "eslint"
     },
     "dependencies": {

@@ -2,8 +2,8 @@ import request from 'supertest'
 import { Express } from 'express-serve-static-core'
 import faker from '@faker-js/faker'
 
-import { createApp } from '@/app'
-import db from '@/utils/db'
+import { createApp } from '../app'
+import db from '../utils/db'
 import validator from 'validator'
 
 let app: Express

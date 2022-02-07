@@ -1,4 +1,5 @@
 import { getErrorMessage, stringifyUnknown } from '@/utils/err/errUtils'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 
 import db, { User } from '@/utils/db'
 import logger from '@/utils/logger'
@@ -9,7 +10,6 @@ import jwt from 'jsonwebtoken'
 import config from '@/config'
 
 import type { ServiceFailure } from './utils'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 
 export enum UserServiceError {
     DUPLICATE_USER_NAME = 'duplicate_username',
