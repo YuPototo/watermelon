@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken'
 
 import config from '../../config'
 
-const createUser = async (id: number) => {
+const createUser = async (id: number, userName: string) => {
     await db.user.create({
-        data: { id, userName: 'test_user', password: 'test_password' },
+        data: { id, userName, password: 'test_password' },
     })
 }
 

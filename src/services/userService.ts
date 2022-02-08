@@ -228,9 +228,19 @@ const getUserIdFromPayload = (payload: jwt.JwtPayload) => {
     }
 }
 
+export const getUserCommunities = async (userId: number): Promise<number[]> => {
+    const entries = await db.communityUser.findMany({
+        where: {
+            userId,
+        },
+    })
+    return entries.map((entry) => entry.communityId)
+}
+
 export default {
     createUser,
     createAuthToken,
     login,
     getUserByToken,
+    getUserCommunities,
 }

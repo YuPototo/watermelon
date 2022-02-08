@@ -21,7 +21,7 @@ beforeAll(async () => {
     const community = await db.community.create({ data: COMMUNITY })
     communityId = community.id
 
-    await userUtils.createUser(USER_ID)
+    await userUtils.createUser(USER_ID, 'test_user')
     token = userUtils.createToken(USER_ID)
 })
 

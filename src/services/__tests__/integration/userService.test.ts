@@ -1,10 +1,10 @@
 import userService from '../../userService'
-import db from '@/utils/db'
+import db from '../../../utils/db'
 import faker from '@faker-js/faker'
 import jwt from 'jsonwebtoken'
 import validator from 'validator'
 
-import config from '@/config'
+import config from '../../../config'
 
 afterAll(async () => {
     await db.$disconnect()

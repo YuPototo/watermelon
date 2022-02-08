@@ -16,3 +16,19 @@ export const isServiceFailure = (err: unknown): err is ServiceFailure => {
     }
     return false
 }
+
+interface CommunityId {
+    communityId: number
+}
+
+interface CommunityOrQuery {
+    OR: CommunityId[]
+}
+
+export const communityQueryBuilder = (
+    communityIds: number[]
+): CommunityOrQuery => {
+    return {
+        OR: communityIds.map((id) => ({ communityId: id })),
+    }
+}
