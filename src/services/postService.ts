@@ -3,6 +3,21 @@ import type { AtMostOneOf } from '@/utils/types/typesHelper'
 import userService from './userService'
 import { communityQueryBuilder } from './utils'
 
+interface PostOutput {
+    id: number
+    title: string
+    body: string | null
+    createdAt: Date
+    updatedAt: Date
+    user: {
+        id: number
+        userName: string
+    }
+    community: {
+        id: number
+        name: string
+    }
+}
 interface Cursor {
     id: number
 }
@@ -39,7 +54,7 @@ export type GetPostsArgs = {
 interface GetPostsRes {
     hasNext: boolean
     hasPrev: boolean
-    posts: Post[]
+    posts: PostOutput[]
 }
 
 const getAllPosts = async (arg: GetPostsArgs): Promise<GetPostsRes> => {
@@ -70,7 +85,13 @@ const getAllPosts = async (arg: GetPostsArgs): Promise<GetPostsRes> => {
         posts.shift()
     }
 
-    return { hasNext, hasPrev, posts }
+    const postOutputs = []
+    for (const post of posts) {
+        const postOutput = await postToPostOutput(post)
+        postOutputs.push(postOutput)
+    }
+
+    return { hasNext, hasPrev, posts: postOutputs }
 }
 
 export type GetCommunityPostsArgs = {
@@ -78,7 +99,9 @@ export type GetCommunityPostsArgs = {
     limit: number
 } & BeforeOrAfter
 
-const getCommunityPosts = async (arg: GetCommunityPostsArgs) => {
+const getCommunityPosts = async (
+    arg: GetCommunityPostsArgs
+): Promise<GetPostsRes> => {
     const { communityId, before, after } = arg
     const cursor = createCursor(arg)
     const skip = createSkip(arg)
@@ -109,7 +132,13 @@ const getCommunityPosts = async (arg: GetCommunityPostsArgs) => {
         posts.shift()
     }
 
-    return { hasNext, hasPrev, posts }
+    const postOutputs = []
+    for (const post of posts) {
+        const postOutput = await postToPostOutput(post)
+        postOutputs.push(postOutput)
+    }
+
+    return { hasNext, hasPrev, posts: postOutputs }
 }
 
 export type GetUserPostsArgs = {
@@ -117,7 +146,7 @@ export type GetUserPostsArgs = {
     limit: number
 } & BeforeOrAfter
 
-const getUserPosts = async (arg: GetUserPostsArgs) => {
+const getUserPosts = async (arg: GetUserPostsArgs): Promise<GetPostsRes> => {
     const { user, before, after } = arg
     const cursor = createCursor(arg)
     const skip = createSkip(arg)
@@ -148,7 +177,13 @@ const getUserPosts = async (arg: GetUserPostsArgs) => {
         posts.shift()
     }
 
-    return { hasNext, hasPrev, posts }
+    const postOutputs = []
+    for (const post of posts) {
+        const postOutput = await postToPostOutput(post)
+        postOutputs.push(postOutput)
+    }
+
+    return { hasNext, hasPrev, posts: postOutputs }
 }
 
 const getPost = async (postId: number) => {
@@ -176,6 +211,32 @@ const createPost = async ({
             body,
         },
     })
+}
+
+const postToPostOutput = async (post: Post) => {
+    const user = await db.user.findUnique({ where: { id: post.userId } })
+    if (user === null) {
+        throw new Error(`找不到 user ${post.userId}`)
+    }
+
+    const community = await db.community.findUnique({
+        where: { id: post.communityId },
+    })
+    if (!community) {
+        throw new Error(`找不到 community ${post.communityId}`)
+    }
+
+    const postOutput = {
+        id: post.id,
+        title: post.title,
+        body: post.body,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        user: { id: user.id, userName: user.userName },
+        community: { id: community.id, name: community.name },
+    }
+
+    return postOutput
 }
 
 export default {

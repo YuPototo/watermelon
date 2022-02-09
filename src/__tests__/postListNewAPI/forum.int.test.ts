@@ -8,6 +8,7 @@ import testUserUtils from '../../utils/testUtils/userUtils'
 import { deleteAllData } from '../../utils/testUtils/dbUtils'
 
 const USER_ID = 1
+const USER_NAME = 'test_user'
 const COMMUNITIES = [
     {
         id: 1,
@@ -64,7 +65,7 @@ let app: Express
 beforeAll(async () => {
     app = await createApp()
 
-    await testUserUtils.createUser(USER_ID, 'test_user')
+    await testUserUtils.createUser(USER_ID, USER_NAME)
     await db.community.createMany({ data: COMMUNITIES })
     await createPosts()
 })
@@ -83,6 +84,19 @@ describe('GET /posts/community/:id/new', () => {
         expect(res.statusCode).toBe(200)
         expect(res.body).toHaveProperty('posts')
         expect(res.body.posts).toHaveLength(4)
+
+        expect(res.body.posts[0]).toMatchObject({
+            id: expect.any(Number),
+            title: expect.any(String),
+            user: {
+                id: USER_ID,
+                userName: USER_NAME,
+            },
+            community: {
+                id: expect.any(Number),
+                name: expect.any(String),
+            },
+        })
     })
 
     it('should accept limit query', async () => {
