@@ -6,6 +6,7 @@ import postService, {
     PostServiceError,
 } from '@/services/postService'
 import { isServiceFailure } from '@/services/utils'
+import { Post } from '@prisma/client'
 
 export const getAllPostsHandler: RequestHandler = async (req, res, next) => {
     const {
@@ -127,6 +128,7 @@ export const getPostHandler: RequestHandler = async (req, res, next) => {
 
 export const createPostHandler: RequestHandler = async (req, res, next) => {
     const { communityId, title, body } = req.body
+
     if (!communityId) {
         return res.status(400).json({ message: '需要 communityId' })
     }
@@ -142,6 +144,45 @@ export const createPostHandler: RequestHandler = async (req, res, next) => {
             userId: req.user.id,
         })
         return res.status(201).json({ post })
+    } catch (err) {
+        next(err)
+    }
+}
+
+export const updatePostHandler: RequestHandler = async (req, res, next) => {
+    const { title, body } = req.body
+
+    const { postId } = req.params
+
+    if (!title && !body) {
+        return res.status(400).json({ message: 'reqBody 需要 title 或 body' })
+    }
+
+    let post: Post
+    try {
+        post = await postService.getRawPost(parseInt(postId))
+    } catch (err) {
+        if (isServiceFailure(err)) {
+            if (err.name === PostServiceError.NO_RESOURCE) {
+                return res.status(404).json({ message: err.message })
+            }
+        }
+        next(err)
+        return
+    }
+
+    if (post.userId !== req.user.id) {
+        return res.status(401).json({ message: 'Not owner' })
+    }
+
+    try {
+        const updateArg = {
+            id: post.id,
+            title,
+            body,
+        }
+        const updated = await postService.updatePost(updateArg)
+        return res.json({ post: updated })
     } catch (err) {
         next(err)
     }

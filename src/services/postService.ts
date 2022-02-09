@@ -1,5 +1,5 @@
 import db, { User, Post } from '@/utils/db'
-import type { AtMostOneOf } from '@/utils/types/typesHelper'
+import type { AtMostOneOf, RequireAtLeastOne } from '@/utils/types/typesHelper'
 import userService from './userService'
 import { communityQueryBuilder } from './utils'
 
@@ -190,7 +190,7 @@ const getUserPosts = async (arg: GetUserPostsArgs): Promise<GetPostsRes> => {
     return { hasNext, hasPrev, posts: postOutputs }
 }
 
-const getPost = async (postId: number) => {
+const getRawPost = async (postId: number) => {
     const post = await db.post.findUnique({ where: { id: postId } })
 
     if (!post) {
@@ -199,6 +199,11 @@ const getPost = async (postId: number) => {
             message: '找不到 Post',
         }
     }
+    return post
+}
+
+const getPost = async (postId: number) => {
+    const post = await getRawPost(postId)
     return await postToPostOutput(post)
 }
 
@@ -252,10 +257,20 @@ const postToPostOutput = async (post: Post) => {
     return postOutput
 }
 
+type UpdatePostFields = RequireAtLeastOne<{ title: string; body: string }>
+type UpdatePostArg = { id: number } & UpdatePostFields
+
+const updatePost = async ({ id, title, body }: UpdatePostArg) => {
+    const post = await db.post.update({ where: { id }, data: { title, body } })
+    return await postToPostOutput(post)
+}
+
 export default {
     getAllPosts,
     getCommunityPosts,
     getUserPosts,
     getPost,
     createPost,
+    getRawPost,
+    updatePost,
 }

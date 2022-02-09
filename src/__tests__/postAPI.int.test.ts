@@ -124,3 +124,80 @@ describe('POST /posts', () => {
         expect(res2.body.post).toMatchObject(expectedObj)
     })
 })
+
+describe('PATCH /posts/:postId', () => {
+    it('should require auth', async () => {
+        const res = await request(app).patch('/api/posts/1')
+        expect(res.statusCode).toBe(401)
+    })
+
+    it('should return 400 when request body contains no right field', async () => {
+        const res = await request(app)
+            .patch('/api/posts/1')
+            .set('Authorization', `Bearer ${token}`)
+
+        expect(res.statusCode).toBe(400)
+    })
+
+    it('should return 401 when user does not own resource', async () => {
+        const USER_TWO_ID = 99
+        await testUserUtils.createUser(USER_TWO_ID, 'user_two')
+        const otherToken = testUserUtils.createToken(USER_TWO_ID)
+        const res = await request(app)
+            .patch('/api/posts/1')
+            .set('Authorization', `Bearer ${otherToken}`)
+            .send({ title: 'new' })
+
+        expect(res.statusCode).toBe(401)
+    })
+
+    // 404
+    it('should return 404 when resource not exists', async () => {
+        const res = await request(app)
+            .patch('/api/posts/99')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ title: 'new' })
+
+        expect(res.statusCode).toBe(404)
+    })
+
+    // update
+    it('should update post', async () => {
+        const createRes = await request(app)
+            .post('/api/posts')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ communityId: 1, title: 'test title', body: 'test body' })
+
+        const postId = createRes.body.post.id
+
+        const res1 = await request(app)
+            .patch(`/api/posts/${postId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ title: 'new title' })
+        expect(res1.statusCode).toBe(200)
+        expect(res1.body.post).toMatchObject({
+            title: 'new title',
+            body: 'test body',
+        })
+
+        const res2 = await request(app)
+            .patch(`/api/posts/${postId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ body: 'new body' })
+        expect(res2.statusCode).toBe(200)
+        expect(res2.body.post).toMatchObject({
+            title: 'new title',
+            body: 'new body',
+        })
+
+        const res3 = await request(app)
+            .patch(`/api/posts/${postId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ title: 'new title 2', body: 'new body 2' })
+        expect(res3.statusCode).toBe(200)
+        expect(res3.body.post).toMatchObject({
+            title: 'new title 2',
+            body: 'new body 2',
+        })
+    })
+})
