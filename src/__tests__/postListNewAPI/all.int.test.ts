@@ -55,7 +55,7 @@ const POSTS = [
 const createPosts = async () => {
     for (const post of POSTS) {
         await db.post.create({ data: post })
-        // 最终的 post 顺序应该是 5-4-3-2-1
+        // post 按发帖时间排序时，顺序是 5-4-3-2-1
     }
 }
 
@@ -154,5 +154,45 @@ describe('GET /posts/all/new', () => {
         )
         expect(res.statusCode).toBe(200)
         expect(res.body.posts).toHaveLength(2)
+    })
+})
+
+describe('GET /posts/all/new 翻页', () => {
+    it('should have hasNext and hasPrev in res body', async () => {
+        const res = await request(app).get('/api/posts/all/new?limit=1&after=2')
+        expect(res.body).toHaveProperty('hasNext')
+        expect(res.body).toHaveProperty('hasPrev')
+    })
+
+    it('should return hasNext as true when there is next page', async () => {
+        // 只获取第1个 post 时，后面还有4个post
+        const res = await request(app).get('/api/posts/all/new?limit=1')
+        expect(res.body.hasNext).toBeTruthy()
+    })
+
+    it('should return hasNext as false when there is no next page', async () => {
+        // 获取全部5个 post，没有下一页了
+        const res = await request(app).get('/api/posts/all/new')
+        expect(res.body.hasNext).toBeFalsy()
+
+        // 获取最后一个 post，没有下一页了
+        const res2 = await request(app).get('/api/posts/all/new?after=4')
+        expect(res2.body.hasNext).toBeFalsy()
+    })
+
+    it('should return hasPrev as true when there is prev page', async () => {
+        // 获取3号 post 后面的 post
+        const res = await request(app).get('/api/posts/all/new?after=3')
+        expect(res.body.hasPrev).toBeTruthy()
+    })
+
+    it('should return hasPrev as false when there is no prev page', async () => {
+        // 获取所有5个posts
+        const res = await request(app).get('/api/posts/all/new')
+        expect(res.body.hasPrev).toBeFalsy()
+
+        // 获取4号 post 前面的post，即5号 post。不再有前一页。
+        const res2 = await request(app).get('/api/posts/all/new?before=4')
+        expect(res2.body.hasPrev).toBeFalsy()
     })
 })

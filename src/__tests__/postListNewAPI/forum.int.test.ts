@@ -123,3 +123,49 @@ describe('GET /posts/community/:id/new', () => {
         expect(res.body.posts).toHaveLength(1)
     })
 })
+
+describe('GET /posts/community/:id/new 翻页', () => {
+    it('should have hasNext and hasPrev in res body', async () => {
+        const res = await request(app).get('/api/posts/community/1/new')
+        expect(res.body).toHaveProperty('hasNext')
+        expect(res.body).toHaveProperty('hasPrev')
+    })
+
+    it('should return hasNext as true when there is next page', async () => {
+        // 只获取第1个 post 时，后面还有 post
+        const res = await request(app).get('/api/posts/community/1/new?limit=1')
+        expect(res.body.hasNext).toBeTruthy()
+    })
+
+    it('should return hasNext as false when there is no next page', async () => {
+        // 获取全部4个 post，没有下一页了
+        const res = await request(app).get('/api/posts/community/1/new')
+        expect(res.body.hasNext).toBeFalsy()
+
+        // 获取第2个 post 后面的一个 post，即 post 1，然后就没有了
+        const res2 = await request(app).get(
+            '/api/posts/community/1/new?after=2&limit=1'
+        )
+        expect(res2.body.hasNext).toBeFalsy()
+    })
+
+    it('should return hasPrev as true when there is prev page', async () => {
+        // 获取到3号帖子之前的帖子：帖子4。再往前还有帖子5
+        const res = await request(app).get(
+            '/api/posts/community/1/new?before=3&limit=1'
+        )
+        expect(res.body.hasPrev).toBeTruthy()
+    })
+
+    it('should return hasPrev as false when there is no prev page', async () => {
+        // 获取所有posts
+        const res = await request(app).get('/api/posts/community/1/new')
+        expect(res.body.hasPrev).toBeFalsy()
+
+        // 获取4号 post 前面的post，即5号 post。不再有前一页。
+        const res2 = await request(app).get(
+            '/api/posts/community/1/new?before=4'
+        )
+        expect(res2.body.hasPrev).toBeFalsy()
+    })
+})

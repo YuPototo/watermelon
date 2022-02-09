@@ -158,3 +158,58 @@ describe('GET /posts/me/new', () => {
         expect(res.body.posts).toHaveLength(1)
     })
 })
+
+describe('GET /posts/me/new 翻页', () => {
+    it('should have hasNext and hasPrev in res body', async () => {
+        const res = await request(app)
+            .get('/api/posts/me/new')
+            .set('Authorization', `Bearer ${token}`)
+
+        expect(res.body).toHaveProperty('hasNext')
+        expect(res.body).toHaveProperty('hasPrev')
+    })
+
+    it('should return hasNext as true when there is next page', async () => {
+        // 只获取第1个 post 时，后面还若干个 post
+        const res = await request(app)
+            .get('/api/posts/me/new?limit=1')
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.body.hasNext).toBeTruthy()
+    })
+
+    it('should return hasNext as false when there is no next page', async () => {
+        // 获取全部 post，没有下一页了
+        const res = await request(app)
+            .get('/api/posts/me/new')
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.body.hasNext).toBeFalsy()
+
+        // 获取最后一个 post，没有下一页了
+        const res2 = await request(app)
+            .get('/api/posts/me/new?after=2&limit=1')
+            .set('Authorization', `Bearer ${token}`)
+        expect(res2.body.hasNext).toBeFalsy()
+    })
+
+    it('should return hasPrev as true when there is prev page', async () => {
+        // 获取2号 post 之前的4号帖子
+        const res = await request(app)
+            .get('/api/posts/me/new?before=2&limit=1')
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.body.hasPrev).toBeTruthy()
+    })
+
+    it('should return hasPrev as false when there is no prev page', async () => {
+        // 获取所有posts
+        const res = await request(app)
+            .get('/api/posts/me/new')
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.body.hasPrev).toBeFalsy()
+
+        // 获取4号 post 前面的post，即5号 post。不再有前一页。
+        const res2 = await request(app)
+            .get('/api/posts/me/new?before=4&limit=1')
+            .set('Authorization', `Bearer ${token}`)
+        expect(res2.body.hasPrev).toBeFalsy()
+    })
+})

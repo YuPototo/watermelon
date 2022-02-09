@@ -1,5 +1,9 @@
 import { RequestHandler } from 'express'
-import postService from '@/services/postService'
+import postService, {
+    GetCommunityPostsArgs,
+    GetPostsArgs,
+    GetUserPostsArgs,
+} from '@/services/postService'
 
 export const getAllPostsHandler: RequestHandler = async (req, res, next) => {
     const {
@@ -14,15 +18,19 @@ export const getAllPostsHandler: RequestHandler = async (req, res, next) => {
 
     const limit = limitParam ? parseInt(limitParam) : 25
 
-    if (before && after) {
+    if (before !== undefined && after !== undefined) {
         return res
             .status(400)
             .json({ message: '只允许 after 或 before 中的一个' })
     }
 
     try {
-        const posts = await postService.getAllPosts({ limit, before, after })
-        return res.json({ posts })
+        const data = await postService.getAllPosts({
+            limit,
+            before,
+            after,
+        } as GetPostsArgs) // tech debts
+        return res.json(data)
     } catch (err) {
         next(err)
     }
@@ -53,14 +61,14 @@ export const getCommunityPostsHandler: RequestHandler = async (
     }
 
     try {
-        const posts = await postService.getCommunityPosts({
+        const data = await postService.getCommunityPosts({
             communityId: parseInt(communityId),
             limit,
             before,
             after,
-        })
+        } as GetCommunityPostsArgs) // tech debts
 
-        return res.json({ posts })
+        return res.json(data)
     } catch (err) {
         next(err)
     }
@@ -86,14 +94,14 @@ export const getUserPostsHandler: RequestHandler = async (req, res, next) => {
     const limit = limitParam ? parseInt(limitParam) : 25
 
     try {
-        const posts = await postService.getUserPosts({
+        const data = await postService.getUserPosts({
             user: req.user,
             limit,
             before,
             after,
-        })
+        } as GetUserPostsArgs) // tech debts
 
-        return res.json({ posts })
+        return res.json(data)
     } catch (err) {
         next(err)
     }
