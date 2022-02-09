@@ -109,3 +109,25 @@ export const getPostHandler: RequestHandler = async (req, res, next) => {
         next(err)
     }
 }
+
+export const createPostHandler: RequestHandler = async (req, res, next) => {
+    const { communityId, title, body } = req.body
+    if (!communityId) {
+        return res.status(400).json({ message: '需要 communityId' })
+    }
+    if (!title) {
+        return res.status(400).json({ message: '需要 title' })
+    }
+
+    try {
+        const post = await postService.createPost({
+            communityId,
+            title,
+            body,
+            userId: req.user.id,
+        })
+        return res.status(201).json({ post })
+    } catch (err) {
+        next(err)
+    }
+}

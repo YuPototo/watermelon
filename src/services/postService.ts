@@ -127,4 +127,33 @@ const getPost = async (postId: number) => {
     return await db.post.findUnique({ where: { id: postId } })
 }
 
-export default { getAllPosts, getCommunityPosts, getUserPosts, getPost }
+interface CreatePostArgs {
+    userId: number
+    communityId: number
+    title: string
+    body?: string
+}
+
+const createPost = async ({
+    communityId,
+    title,
+    body,
+    userId,
+}: CreatePostArgs) => {
+    return await db.post.create({
+        data: {
+            userId,
+            communityId,
+            title,
+            body,
+        },
+    })
+}
+
+export default {
+    getAllPosts,
+    getCommunityPosts,
+    getUserPosts,
+    getPost,
+    createPost,
+}
