@@ -3,7 +3,9 @@ import postService, {
     GetCommunityPostsArgs,
     GetPostsArgs,
     GetUserPostsArgs,
+    PostServiceError,
 } from '@/services/postService'
+import { isServiceFailure } from '@/services/utils'
 
 export const getAllPostsHandler: RequestHandler = async (req, res, next) => {
     const {
@@ -114,6 +116,11 @@ export const getPostHandler: RequestHandler = async (req, res, next) => {
         const post = await postService.getPost(parseInt(postId))
         return res.json({ post })
     } catch (err) {
+        if (isServiceFailure(err)) {
+            if (err.name === PostServiceError.NO_RESOURCE) {
+                return res.status(404).json({ message: err.message })
+            }
+        }
         next(err)
     }
 }

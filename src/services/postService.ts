@@ -3,6 +3,10 @@ import type { AtMostOneOf } from '@/utils/types/typesHelper'
 import userService from './userService'
 import { communityQueryBuilder } from './utils'
 
+export enum PostServiceError {
+    NO_RESOURCE = 'no_resouce',
+}
+
 interface PostOutput {
     id: number
     title: string
@@ -187,7 +191,15 @@ const getUserPosts = async (arg: GetUserPostsArgs): Promise<GetPostsRes> => {
 }
 
 const getPost = async (postId: number) => {
-    return await db.post.findUnique({ where: { id: postId } })
+    const post = await db.post.findUnique({ where: { id: postId } })
+
+    if (!post) {
+        throw {
+            name: PostServiceError.NO_RESOURCE,
+            message: '找不到 Post',
+        }
+    }
+    return await postToPostOutput(post)
 }
 
 interface CreatePostArgs {
@@ -203,7 +215,7 @@ const createPost = async ({
     body,
     userId,
 }: CreatePostArgs) => {
-    return await db.post.create({
+    const post = await db.post.create({
         data: {
             userId,
             communityId,
@@ -211,6 +223,7 @@ const createPost = async ({
             body,
         },
     })
+    return await postToPostOutput(post)
 }
 
 const postToPostOutput = async (post: Post) => {

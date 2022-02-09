@@ -53,9 +53,20 @@ describe('GET /posts/:postId', () => {
         expect(res.body.post).toMatchObject({
             id: 1,
             title: 'post 1',
-            userId: expect.any(Number),
-            communityId: expect.any(Number),
+            user: {
+                id: expect.any(Number),
+                userName: expect.any(String),
+            },
+            community: {
+                id: expect.any(Number),
+                name: expect.any(String),
+            },
         })
+    })
+
+    it('return 404 when no post found', async () => {
+        const res = await request(app).get('/api/posts/30')
+        expect(res.statusCode).toBe(404)
     })
 })
 
@@ -96,8 +107,14 @@ describe('POST /posts', () => {
         const expectedObj = {
             id: expect.any(Number),
             title: 'test title',
-            communityId: 1,
-            userId: USER_ID,
+            user: {
+                id: expect.any(Number),
+                userName: expect.any(String),
+            },
+            community: {
+                id: expect.any(Number),
+                name: expect.any(String),
+            },
         }
         expect(res.body.post).toMatchObject(expectedObj)
 
