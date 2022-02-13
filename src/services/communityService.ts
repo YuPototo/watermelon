@@ -1,6 +1,10 @@
 import db from '@/utils/db'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
 
+export enum CommunityServiceError {
+    NO_RESOURCE = 'no_resouce',
+}
+
 const getCommunities = async () => {
     return await db.community.findMany()
 }
@@ -55,4 +59,25 @@ const checkIsMember = async (userId: number, communityId: number) => {
     }
 }
 
-export default { getCommunities, joinCommunity, leaveCommunity, checkIsMember }
+const getCommunityInfo = async (communityId: number) => {
+    const record = await db.community.findUnique({
+        where: {
+            id: communityId,
+        },
+    })
+    if (record) {
+        return record
+    } else {
+        throw {
+            name: CommunityServiceError.NO_RESOURCE,
+            message: '找不到 Community',
+        }
+    }
+}
+export default {
+    getCommunities,
+    joinCommunity,
+    leaveCommunity,
+    checkIsMember,
+    getCommunityInfo,
+}

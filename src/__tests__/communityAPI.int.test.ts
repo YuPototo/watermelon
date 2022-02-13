@@ -8,9 +8,11 @@ let app: Express
 
 const COMMUNITIES = [
     {
+        id: 1,
         name: 'dota2',
     },
     {
+        id: 2,
         name: '足球',
     },
 ]
@@ -48,5 +50,22 @@ describe('GET /communities', () => {
                 name: '足球',
             },
         ])
+    })
+})
+
+describe('GET /communities/:id', () => {
+    it('should return 404 when not found', async () => {
+        const res = await request(app).get('/api/communities/99')
+        expect(res.status).toBe(404)
+    })
+
+    it('should return 200', async () => {
+        const res = await request(app).get('/api/communities/1')
+        expect(res.status).toBe(200)
+        expect(res.body).toHaveProperty('community')
+        expect(res.body.community).toEqual({
+            id: 1,
+            name: 'dota2',
+        })
     })
 })
