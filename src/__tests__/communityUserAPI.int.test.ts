@@ -25,15 +25,15 @@ beforeAll(async () => {
     token = userUtils.createToken(USER_ID)
 })
 
+afterEach(async () => {
+    await db.communityUser.deleteMany()
+})
+
 afterAll(async () => {
     const deleteUser = db.user.deleteMany()
     const deleteCommunity = db.community.deleteMany()
     await db.$transaction([deleteUser, deleteCommunity])
     await db.$disconnect()
-})
-
-afterEach(async () => {
-    await db.communityUser.deleteMany()
 })
 
 describe('PUT /communityUser/:id', () => {

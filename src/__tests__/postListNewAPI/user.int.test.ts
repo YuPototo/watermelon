@@ -119,6 +119,7 @@ describe('GET /posts/me/new', () => {
         expect(res.body.posts[0]).toMatchObject({
             id: expect.any(Number),
             title: expect.any(String),
+            commentCount: expect.any(Number),
             user: {
                 id: USER_ID,
                 userName: USER_NAME,

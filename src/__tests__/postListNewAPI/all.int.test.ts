@@ -83,6 +83,7 @@ describe('GET /posts/all/new', () => {
         expect(res.body.posts[0]).toMatchObject({
             id: expect.any(Number),
             title: expect.any(String),
+            commentCount: expect.any(Number),
             user: {
                 id: USER_ID,
                 userName: USER_NAME,
@@ -113,6 +114,7 @@ describe('GET /posts/all/new', () => {
                 id: USER_ID,
                 userName: USER_NAME,
             },
+            commentCount: expect.any(Number),
             community: {
                 id: expect.any(Number),
                 name: expect.any(String),

@@ -15,21 +15,6 @@ const COMMUNITIES = [
     },
 ]
 
-const POSTS = [
-    {
-        id: 1,
-        title: 'post 1',
-        userId: 1,
-        communityId: 1,
-    },
-    {
-        id: 2,
-        title: 'post 2',
-        userId: 1,
-        communityId: 1,
-    },
-]
-
 let app: Express
 let token: string
 
@@ -38,36 +23,11 @@ beforeAll(async () => {
     token = testUserUtils.createToken(USER_ID)
     await testUserUtils.createUser(USER_ID, 'test_user')
     await db.community.createMany({ data: COMMUNITIES })
-    await db.post.createMany({ data: POSTS })
 })
 
 afterAll(async () => {
     await deleteAllData()
-})
-
-describe('GET /posts/:postId', () => {
-    it('return a post', async () => {
-        const res = await request(app).get('/api/posts/1')
-        expect(res.statusCode).toBe(200)
-        expect(res.body).toHaveProperty('post')
-        expect(res.body.post).toMatchObject({
-            id: 1,
-            title: 'post 1',
-            user: {
-                id: expect.any(Number),
-                userName: expect.any(String),
-            },
-            community: {
-                id: expect.any(Number),
-                name: expect.any(String),
-            },
-        })
-    })
-
-    it('return 404 when no post found', async () => {
-        const res = await request(app).get('/api/posts/30')
-        expect(res.statusCode).toBe(404)
-    })
+    await db.$disconnect()
 })
 
 describe('POST /posts', () => {
@@ -107,6 +67,7 @@ describe('POST /posts', () => {
         const expectedObj = {
             id: expect.any(Number),
             title: 'test title',
+            commentCount: 0,
             user: {
                 id: expect.any(Number),
                 userName: expect.any(String),
@@ -122,6 +83,62 @@ describe('POST /posts', () => {
         const res2 = await request(app).get(`/api/posts/${postId}`)
         expect(res2.status).toBe(200)
         expect(res2.body.post).toMatchObject(expectedObj)
+    })
+})
+
+describe('GET /posts/:postId', () => {
+    it('return a post', async () => {
+        const resOne = await request(app)
+            .post('/api/posts')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ communityId: 1, title: 'test title' })
+        const postId = resOne.body.post.id
+
+        const resTwo = await request(app).get(`/api/posts/${postId}`)
+        expect(resTwo.statusCode).toBe(200)
+        expect(resTwo.body).toHaveProperty('post')
+        expect(resTwo.body.post).toMatchObject({
+            id: postId,
+            title: 'test title',
+            commentCount: 0,
+            user: {
+                id: expect.any(Number),
+                userName: expect.any(String),
+            },
+            community: {
+                id: expect.any(Number),
+                name: expect.any(String),
+            },
+        })
+    })
+
+    it('return 404 when no post found', async () => {
+        const res = await request(app).get('/api/posts/999')
+        expect(res.statusCode).toBe(404)
+    })
+
+    it('return comment counts', async () => {
+        const resOne = await request(app)
+            .post('/api/posts')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ communityId: 1, title: 'test title' })
+        const postId = resOne.body.post.id
+
+        await request(app)
+            .post('/api/comments')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ postId, body: 'test body' })
+
+        await request(app)
+            .post('/api/comments')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ postId, body: 'test body' })
+
+        const resTwo = await request(app).get(`/api/posts/${postId}`)
+        expect(resTwo.statusCode).toBe(200)
+        expect(resTwo.body.post).toMatchObject({
+            commentCount: 2,
+        })
     })
 })
 
@@ -143,8 +160,15 @@ describe('PATCH /posts/:postId', () => {
         const USER_TWO_ID = 99
         await testUserUtils.createUser(USER_TWO_ID, 'user_two')
         const otherToken = testUserUtils.createToken(USER_TWO_ID)
+
+        const resOne = await request(app)
+            .post('/api/posts')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ communityId: 1, title: 'test title' })
+        const postId = resOne.body.post.id
+
         const res = await request(app)
-            .patch('/api/posts/1')
+            .patch(`/api/posts/${postId}`)
             .set('Authorization', `Bearer ${otherToken}`)
             .send({ title: 'new' })
 
@@ -176,6 +200,7 @@ describe('PATCH /posts/:postId', () => {
             .send({ title: 'new title' })
         expect(res1.statusCode).toBe(200)
         expect(res1.body.post).toMatchObject({
+            commentCount: 0,
             title: 'new title',
             body: 'test body',
         })

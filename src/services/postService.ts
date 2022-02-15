@@ -7,12 +7,19 @@ export enum PostServiceError {
     NO_RESOURCE = 'no_resouce',
 }
 
+type RawPost = Post & {
+    _count: {
+        Comment: number
+    }
+}
+
 interface PostOutput {
     id: number
     title: string
     body: string | null
     createdAt: Date
     updatedAt: Date
+    commentCount: number
     user: {
         id: number
         userName: string
@@ -77,6 +84,11 @@ const getAllPosts = async (arg: GetPostsArgs): Promise<GetPostsRes> => {
         take: limit,
         cursor,
         skip,
+        include: {
+            _count: {
+                select: { Comment: true },
+            },
+        },
     })
 
     if (posts.length === limit) {
@@ -124,6 +136,11 @@ const getCommunityPosts = async (
         take: limit,
         cursor,
         skip,
+        include: {
+            _count: {
+                select: { Comment: true },
+            },
+        },
     })
 
     if (posts.length === limit) {
@@ -169,6 +186,11 @@ const getUserPosts = async (arg: GetUserPostsArgs): Promise<GetPostsRes> => {
         take: limit,
         cursor,
         skip,
+        include: {
+            _count: {
+                select: { Comment: true },
+            },
+        },
     })
 
     if (posts.length === limit) {
@@ -190,8 +212,15 @@ const getUserPosts = async (arg: GetUserPostsArgs): Promise<GetPostsRes> => {
     return { hasNext, hasPrev, posts: postOutputs }
 }
 
-const getRawPost = async (postId: number) => {
-    const post = await db.post.findUnique({ where: { id: postId } })
+const getRawPost = async (postId: number): Promise<RawPost> => {
+    const post = await db.post.findUnique({
+        where: { id: postId },
+        include: {
+            _count: {
+                select: { Comment: true },
+            },
+        },
+    })
 
     if (!post) {
         throw {
@@ -227,11 +256,16 @@ const createPost = async ({
             title,
             body,
         },
+        include: {
+            _count: {
+                select: { Comment: true },
+            },
+        },
     })
     return await postToPostOutput(post)
 }
 
-const postToPostOutput = async (post: Post) => {
+const postToPostOutput = async (post: RawPost) => {
     const user = await db.user.findUnique({ where: { id: post.userId } })
     if (user === null) {
         throw new Error(`找不到 user ${post.userId}`)
@@ -252,6 +286,7 @@ const postToPostOutput = async (post: Post) => {
         updatedAt: post.updatedAt,
         user: { id: user.id, userName: user.userName },
         community: { id: community.id, name: community.name },
+        commentCount: post._count.Comment,
     }
 
     return postOutput
@@ -261,7 +296,15 @@ type UpdatePostFields = RequireAtLeastOne<{ title: string; body: string }>
 type UpdatePostArg = { id: number } & UpdatePostFields
 
 const updatePost = async ({ id, title, body }: UpdatePostArg) => {
-    const post = await db.post.update({ where: { id }, data: { title, body } })
+    const post = await db.post.update({
+        where: { id },
+        data: { title, body },
+        include: {
+            _count: {
+                select: { Comment: true },
+            },
+        },
+    })
     return await postToPostOutput(post)
 }
 
