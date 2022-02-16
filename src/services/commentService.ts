@@ -53,6 +53,9 @@ const commentToOutput = async (comment: Comment) => {
 const getComments = async (postId: number) => {
     const comments = await db.comment.findMany({
         where: { postId },
+        orderBy: {
+            createdAt: 'asc',
+        },
     })
     const output = []
     for (const comment of comments) {
